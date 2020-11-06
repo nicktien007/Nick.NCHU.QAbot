@@ -15,6 +15,7 @@ def tokenize(sentence):
     # converted = cc.convert(sentence)  # 簡>繁
     words = jieba.posseg.cut(sentence)
     words = [w.word for w in words if w.word not in stopword_set]
+    print(words)
     return words
 
 
