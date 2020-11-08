@@ -1,6 +1,6 @@
-import arg_parser_factory
-from calc_score_service import start_QA_bot
-from pre_process_service import pre_process_wiki_db
+from utils import arg_parser_factory
+from service.calc_score_service import start_QA_bot
+from service.pre_process_service import pre_process_wiki_db
 
 
 def main():

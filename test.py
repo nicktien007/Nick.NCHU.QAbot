@@ -1,7 +1,7 @@
 from collections import defaultdict
 import time
-from calc_score_service import start_QA_bot, calc_ABC, get_ans_index_val_score
-from file_utils import load_json
+from service.calc_score_service import start_QA_bot, calc_ABC, get_ans_index_val_score
+from utils.file_utils import load_json
 from tokenize_service import tokenize
 
 

@@ -2,7 +2,7 @@ import json
 import operator
 import time
 from collections import Counter
-from file_utils import load_json
+from utils.file_utils import load_json
 from tokenize_service import tokenize
 
 
