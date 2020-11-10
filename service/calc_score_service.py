@@ -3,7 +3,7 @@ import operator
 import time
 from collections import Counter
 from utils.file_utils import load_json
-from tokenize_service import tokenize
+from service.tokenize_service import tokenize
 
 
 def start_QA_bot(wiki_path, question_path):

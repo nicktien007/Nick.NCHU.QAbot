@@ -1,8 +1,11 @@
-from collections import defaultdict
 import time
+from collections import defaultdict
+
+from ckiptagger import WS, POS, NER
+
 from service.calc_score_service import start_QA_bot, calc_ABC, get_ans_index_val_score
+from service.tokenize_service import tokenize
 from utils.file_utils import load_json
-from tokenize_service import tokenize
 
 
 class inverted_index:
@@ -41,7 +44,8 @@ def test_one_calc_score():
     # # ok
     ques_tokenized_2 = tokenize(
         "簡稱臺大，前身為日治時期1928年創立的臺北帝國大學，由首任校長幣原坦籌設，原初只定位為醫學和農學的實業大學，由時任總督伊澤多喜男改為籌設成綜合大學之目標。臺北帝國大學在二次大戰後二次改名，1945年11月易名為國立臺北大學，同年12月15日啟用現名國立臺灣大學，以自由主義學風著稱，是臺灣第一所現代綜合大學。")
-    ans_tokenized_2 = ["國立高雄大學", "國立台南大學", "國立臺灣大學"]
+    ans_tokenized_2 = ["高雄大學", "台南大學", "臺灣大學"]
+    # ans_tokenized_2 = ckip(["國立高雄大學", "國立台南大學", "國立臺灣大學"])
 
     # ok,135
     ques_tokenized_3 = tokenize(
@@ -68,11 +72,12 @@ def test_one_calc_score():
     ans_tokenized_7 = ["紐西蘭", "加拿大", "印度"]
 
     ques_tokenized_8 = tokenize(
-        "西非國家，位於非洲的幾內亞灣西岸頂點，鄰國包括西邊的貝南，北邊的尼日，東北方與查德接壤一小段國界，正東則是喀麥隆。是全非洲人口最多的國家，首都原本為西南沿海的海港城市拉哥斯，1991年12月遷都至地理位置位居全國國土正中央的阿布札。")
-    ans_tokenized_8 = ["瑞士", "奈及利亞", "奧地利"]
+        "是一個由主權國家組成的國際組織，致力於促進各國在國際法、國際安全、經濟發展、社會進步、人權、公民自由、政治自由、民主及實現持久世界和平方面的合作。成立於第二次世界大戰結束後的1945年，取代國際聯盟以阻止戰爭並為各國提供對話平臺。")
+    ans_tokenized_8 = ["貿易", "聯合國", "衛生"]
+    # ans_tokenized_8 = ["世界貿易組織", "聯合國", "世界衛生組織"]
 
     start_total = time.time()
-    calc_ABC(j, ques_tokenized_8, ans_tokenized_8)
+    calc_ABC(j, ques_tokenized_2, ans_tokenized_2)
     end_total = time.time()
     print('run_time = ', end_total - start_total)
 
@@ -86,7 +91,7 @@ def test_start_QA_bot():
 
 def test_tokenize():
     tokenized = tokenize(
-        "簡稱雲或滇，是中華人民共和國西南部邊疆地區的一個省份，省會昆明。雲南是人類重要的發祥地之一，生活在距今170萬年前的雲南元謀猿人，是迄今為止發現的中國乃至亞洲最早的人類。戰國時期，這裡是滇族部落的生息之地。")
+        "聯合國")
     print(tokenized)
 
 
@@ -114,14 +119,64 @@ def case_6():
     print(result)
 
 
+def print_word_pos_sentence(word_sentence, pos_sentence):
+    assert len(word_sentence) == len(pos_sentence)
+    for word, pos in zip(word_sentence, pos_sentence):
+        print(f"{word}({pos})", end="\u3000")
+    print()
+    return
+
+def test_ckip():
+    ws = WS("./dataset/data")
+    pos = POS("./dataset/data")
+    ner = NER("./dataset/data")
+
+    sentence_list = [
+        # "傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。",
+        # "美國參議院針對今天總統布什所提名的勞工部長趙小蘭展開認可聽證會，預料她將會很順利通過參議院支持，成為該國有史以來第一位的華裔女性內閣成員。",
+        # "",
+        # "土地公有政策?？還是土地婆有政策。.",
+        # "… 你確定嗎… 不要再騙了……",
+        # "最多容納59,000個人,或5.9萬人,再多就不行了.這是環評的結論.",
+        # "科長說:1,坪數對人數為1:3。2,可以再增加。",
+        "世界貿易組織",
+        "聯合國",
+        "世界衛生組織",
+        # "國立高雄大學",
+        # "國立台南大學",
+        # "國立臺灣大學"
+    ]
+
+    word_sentence_list = ws(
+        sentence_list,
+        # sentence_segmentation = True, # To consider delimiters
+        # segment_delimiter_set = {",", "。", ":", "?", "!", ";"}), # This is the defualt set of delimiters
+        # recommend_dictionary = dictionary1, # words in this dictionary are encouraged
+        # coerce_dictionary = dictionary2, # words in this dictionary are forced
+    )
+
+    pos_sentence_list = pos(word_sentence_list)
+
+    entity_sentence_list = ner(word_sentence_list, pos_sentence_list)
+    for i, sentence in enumerate(sentence_list):
+        print()
+        print(f"'{sentence}'")
+        print_word_pos_sentence(word_sentence_list[i], pos_sentence_list[i])
+
+        for entity in sorted(entity_sentence_list[i]):
+            print("================",entity)
+
 def main():
     # pre_process_wiki_db()
     # pre_process_wiki_db_wordcount()
     # test_one_calc_score()
-    test_start_QA_bot()
+    # test_start_QA_bot()
     # test_tokenize()
     # case_5()
     # case_6()
+    # data_utils.download_data_gdown("./dataset/")
+    # print(extract_tags("世界衛生組織"))
+    test_ckip()
 
 
 if __name__ == '__main__':
