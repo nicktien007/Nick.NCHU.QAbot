@@ -116,17 +116,25 @@ def to_ABC(answer, ans_tokenized):
     return "C"
 
 
-def show_idx_answers(lists):
+def build_idx_answers(lists, chunk_siz=50):
     index = []
     result = []
     for i, v in enumerate(lists):
-        # input_s=''
-        if len(str(i)) == 1:
-            input_s = "%s" % str(v)
-        elif len(str(i)) == 2:
-            input_s = "%s " % str(v)
-        else:
-            input_s = "%s  " % str(v)
+        input_s = to_formatter(i, v)
         result.append(input_s)
         index.append(str(i))
-    return index, result
+
+    chunks_index = [index[x:x + chunk_siz] for x in range(0, len(index), chunk_siz)]
+    chunks_result = [result[x:x + chunk_siz] for x in range(0, len(result), chunk_siz)]
+
+    return chunks_index, chunks_result
+
+
+def to_formatter(index, val):
+    if len(str(index)) == 1:
+        input_s = "%s" % str(val)
+    elif len(str(index)) == 2:
+        input_s = "%s " % str(val)
+    else:
+        input_s = "%s  " % str(val)
+    return input_s

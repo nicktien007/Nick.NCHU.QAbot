@@ -1,9 +1,7 @@
 import time
 from collections import defaultdict
 
-from ckiptagger import WS, POS, NER
-
-from service.calc_score_service import start_QA_bot, calc_ABC, get_ans_index_val_score, show_idx_answers
+from service.calc_score_service import start_QA_bot, calc_ABC, get_ans_index_val_score, build_idx_answers
 from service.tokenize_service import tokenize
 from utils.file_utils import load_json
 
@@ -127,47 +125,6 @@ def print_word_pos_sentence(word_sentence, pos_sentence):
     return
 
 
-def test_ckip():
-    ws = WS("./dataset/data")
-    pos = POS("./dataset/data")
-    ner = NER("./dataset/data")
-
-    sentence_list = [
-        # "傅達仁今將執行安樂死，卻突然爆出自己20年前遭緯來體育台封殺，他不懂自己哪裡得罪到電視台。",
-        # "美國參議院針對今天總統布什所提名的勞工部長趙小蘭展開認可聽證會，預料她將會很順利通過參議院支持，成為該國有史以來第一位的華裔女性內閣成員。",
-        # "",
-        # "土地公有政策?？還是土地婆有政策。.",
-        # "… 你確定嗎… 不要再騙了……",
-        # "最多容納59,000個人,或5.9萬人,再多就不行了.這是環評的結論.",
-        # "科長說:1,坪數對人數為1:3。2,可以再增加。",
-        "世界貿易組織",
-        "聯合國",
-        "世界衛生組織",
-        # "國立高雄大學",
-        # "國立台南大學",
-        # "國立臺灣大學"
-    ]
-
-    word_sentence_list = ws(
-        sentence_list,
-        # sentence_segmentation = True, # To consider delimiters
-        # segment_delimiter_set = {",", "。", ":", "?", "!", ";"}), # This is the defualt set of delimiters
-        # recommend_dictionary = dictionary1, # words in this dictionary are encouraged
-        # coerce_dictionary = dictionary2, # words in this dictionary are forced
-    )
-
-    pos_sentence_list = pos(word_sentence_list)
-
-    entity_sentence_list = ner(word_sentence_list, pos_sentence_list)
-    for i, sentence in enumerate(sentence_list):
-        print()
-        print(f"'{sentence}'")
-        print_word_pos_sentence(word_sentence_list[i], pos_sentence_list[i])
-
-        for entity in sorted(entity_sentence_list[i]):
-            print("================", entity)
-
-
 def val_answers():
     ans = ["B", "C", "B", "A", "B", "A", "A", "C", "B", "B", "C", "A", "B", "B", "A", "B", "A", "C", "B", "B", "C", "A",
            "C", "A", "A", "C", "B", "B", "A", "B", "C", "A", "C", "C", "A", "B", "A", "C", "B", "A", "B", "C", "A", "B",
@@ -183,7 +140,7 @@ def val_answers():
     aa = list(map(lambda x: (x["Answer"]), j))
     count = 0
     for i, a in enumerate(aa):
-        if list(aa).__getitem__(i) != ans.__getitem__(i):
+        if list(aa)[i] != ans[i]:
             count += 1
     print(count)
 
@@ -203,22 +160,24 @@ def main():
     # val_answers()
 
 
-def test_show_answers():
-    lists = ["B", "A", "B", "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B",
-             "A", "B", "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A",
-             "B", "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B",
-             "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B",
-             "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A",
-             "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A", "A",
-             "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A", "A", "C",
-             "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A", "A", "C", "A",
-             "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A", "A", "C", "A", "A",
-             "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A", "A", "C", "A", "A", "B",
-             "B", "B", "B", "C", "A", "A", "B", "A", "C", "B"]
-    index, result = show_idx_answers(lists)
 
-    print(index)
-    print(result)
+def test_show_answers():
+    lists = ["B", "A", "B", "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B",
+             "B","A", "B", "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B",
+             "B", "A","B", "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B",
+             "B", "A", "B","B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B",
+             "B", "A", "B", "B","A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B",
+             "B", "A", "B", "B", "A","A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B",
+             "B", "A", "B", "B", "A", "A","C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B",
+             "B", "A", "B", "B", "A", "A", "C","A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B",
+             "B", "A", "B", "B", "A", "A", "C", "A","A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B",
+             "B", "A", "B", "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B"]
+    indexes, results = build_idx_answers(lists)
+
+    for i,v in enumerate(indexes):
+        print(v)
+        print(results[i])
+        print()
 
 
 if __name__ == '__main__':
