@@ -14,7 +14,10 @@ def start_QA_bot(wiki_path, question_path):
     print('load = ', end - start)
 
     start_total = time.time()
-    answers = [calc_ABC(wiki_db_json, tokenize(q["Question"]), [q["A"], q["B"], q["C"]]) for q in question]
+    answers = [calc_ABC(wiki_db_json,
+                        tokenize((i, q["Question"])),
+                        [q["A"], q["B"], q["C"]])
+               for i, q in enumerate(question)]
     end_total = time.time()
     print('run_time = ', end_total - start_total)
     return json.dumps(answers)
@@ -23,16 +26,24 @@ def start_QA_bot(wiki_path, question_path):
 def calc_ABC(wiki_db_json, ques_tokenized, ans_tokenized):
     ans_index = get_tokenized_indexted(wiki_db_json, ans_tokenized)
 
+    if len(ans_index.keys()) == 0:
+        print(ans_tokenized)
+        print("**********找不到答案，自己判斷***********\n")
+        return "C"
+
     # 如果只有一個答案在wiki找到，直接回傳該答案就好
     if len(ans_index.keys()) == 1:
-        print(ans_index.keys())
+        print(ans_tokenized)
+        print("############只找到一個答案############")
+        print(list(ans_index.keys())[0], end="\n\n")
         return to_ABC(list(ans_index.keys())[0], ans_tokenized)
 
     ques_index = get_tokenized_indexted(wiki_db_json, ques_tokenized)
     quest_counter = to_quest_counter(ques_index)
 
     answer = calc_ans(quest_counter, ans_index)
-    print("===", answer, "===", end="\n\n")
+    print(ans_tokenized)
+    print("=====", answer, "=====", end="\n\n")
 
     return to_ABC(answer, ans_tokenized)
 
@@ -86,7 +97,7 @@ def calc_ans(quest_counter, ans_index):
 
         score_avg = score / len(a[1])  # 取平均
         score_dic[a[0]] = score_avg
-        print(a[0], 'score_tal=', score_avg)
+        print(a[0], 'score =', score_avg)
 
     return max(score_dic.items(), key=operator.itemgetter(1))[0]
 
@@ -103,3 +114,19 @@ def to_ABC(answer, ans_tokenized):
         elif ans_tokenized_idx == 1:
             return "B"
     return "C"
+
+
+def show_idx_answers(lists):
+    index = []
+    result = []
+    for i, v in enumerate(lists):
+        # input_s=''
+        if len(str(i)) == 1:
+            input_s = "%s" % str(v)
+        elif len(str(i)) == 2:
+            input_s = "%s " % str(v)
+        else:
+            input_s = "%s  " % str(v)
+        result.append(input_s)
+        index.append(str(i))
+    return index, result

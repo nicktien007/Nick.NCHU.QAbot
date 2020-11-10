@@ -3,7 +3,7 @@ from collections import defaultdict
 
 from ckiptagger import WS, POS, NER
 
-from service.calc_score_service import start_QA_bot, calc_ABC, get_ans_index_val_score
+from service.calc_score_service import start_QA_bot, calc_ABC, get_ans_index_val_score, show_idx_answers
 from service.tokenize_service import tokenize
 from utils.file_utils import load_json
 
@@ -68,8 +68,8 @@ def test_one_calc_score():
     ans_tokenized_6 = ["四川省", "遼寧省", "河北省"]
 
     ques_tokenized_7 = tokenize(
-        "位於太平洋西南部的一個島嶼國家，首都為威靈頓，但最大的城市為奧克蘭都會區。紐西蘭主要由兩大島嶼組成，即北島和南島，兩島以庫克海峽分隔，首都威靈頓即位於北島末端處，除此之外還包含了一些其他小的島嶼。")
-    ans_tokenized_7 = ["紐西蘭", "加拿大", "印度"]
+        (0, "《笑傲江湖》是金庸寫的武俠小說，小說男主角令狐沖於思過崖習得何種劍法?"))
+    ans_tokenized_7 = ["天外飛仙", "獨孤九劍", "破雲摘星九九八十一劍"]
 
     ques_tokenized_8 = tokenize(
         "是一個由主權國家組成的國際組織，致力於促進各國在國際法、國際安全、經濟發展、社會進步、人權、公民自由、政治自由、民主及實現持久世界和平方面的合作。成立於第二次世界大戰結束後的1945年，取代國際聯盟以阻止戰爭並為各國提供對話平臺。")
@@ -77,7 +77,7 @@ def test_one_calc_score():
     # ans_tokenized_8 = ["世界貿易組織", "聯合國", "世界衛生組織"]
 
     start_total = time.time()
-    calc_ABC(j, ques_tokenized_2, ans_tokenized_2)
+    calc_ABC(j, ques_tokenized_7, ans_tokenized_7)
     end_total = time.time()
     print('run_time = ', end_total - start_total)
 
@@ -126,6 +126,7 @@ def print_word_pos_sentence(word_sentence, pos_sentence):
     print()
     return
 
+
 def test_ckip():
     ws = WS("./dataset/data")
     pos = POS("./dataset/data")
@@ -164,7 +165,28 @@ def test_ckip():
         print_word_pos_sentence(word_sentence_list[i], pos_sentence_list[i])
 
         for entity in sorted(entity_sentence_list[i]):
-            print("================",entity)
+            print("================", entity)
+
+
+def val_answers():
+    ans = ["B", "C", "B", "A", "B", "A", "A", "C", "B", "B", "C", "A", "B", "B", "A", "B", "A", "C", "B", "B", "C", "A",
+           "C", "A", "A", "C", "B", "B", "A", "B", "C", "A", "C", "C", "A", "B", "A", "C", "B", "A", "B", "C", "A", "B",
+           "A", "C", "A", "B", "A", "C", "C", "B", "A", "C", "A", "B", "B", "C", "B", "B", "B", "B", "B", "C", "C", "B",
+           "B", "C", "B", "B", "A", "B", "B", "C", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "C",
+           "A", "C", "C", "C", "A", "A", "B", "A", "A", "C", "B", "C", "C", "C", "B", "B", "A", "A", "C", "C", "B", "A",
+           "C", "B", "C", "B", "A", "A", "A", "C", "B", "C", "A", "A", "A", "C", "C", "A", "B", "A", "B", "A", "B", "B",
+           "B", "C", "C", "B", "A", "B", "C", "A", "A", "C", "A", "A", "B", "C", "B", "A", "A", "B", "A", "A", "B", "A",
+           "A", "A", "A", "B", "C", "A", "A", "B", "A", "C", "A", "A", "A", "A", "C", "A", "C", "C", "A", "C", "A", "C",
+           "B", "C", "A", "A", "A", "C", "B", "A", "C", "A", "A", "A", "B", "B", "B", "A", "C", "A", "A", "B", "B", "B",
+           "B", "B"]
+    j = load_json("./dataset/Questions_with_Ans.json")
+    aa = list(map(lambda x: (x["Answer"]), j))
+    count = 0
+    for i, a in enumerate(aa):
+        if list(aa).__getitem__(i) != ans.__getitem__(i):
+            count += 1
+    print(count)
+
 
 def main():
     # pre_process_wiki_db()
@@ -176,7 +198,27 @@ def main():
     # case_6()
     # data_utils.download_data_gdown("./dataset/")
     # print(extract_tags("世界衛生組織"))
-    test_ckip()
+    # test_ckip()
+    test_show_answers()
+    # val_answers()
+
+
+def test_show_answers():
+    lists = ["B", "A", "B", "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B",
+             "A", "B", "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A",
+             "B", "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B",
+             "B", "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B",
+             "A", "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A",
+             "A", "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A", "A",
+             "C", "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A", "A", "C",
+             "A", "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A", "A", "C", "A",
+             "A", "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A", "A", "C", "A", "A",
+             "B", "B", "B", "B", "C", "A", "A", "B", "A", "C", "B", "B", "A", "B", "B", "A", "A", "C", "A", "A", "B",
+             "B", "B", "B", "C", "A", "A", "B", "A", "C", "B"]
+    index, result = show_idx_answers(lists)
+
+    print(index)
+    print(result)
 
 
 if __name__ == '__main__':
