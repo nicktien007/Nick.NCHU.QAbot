@@ -27,7 +27,28 @@ def start_QA_bot(wiki_path, question_path):
     print("ONLY_ONE:", filter_ans_by(AnswerType.ONLY_ONE, answers))
     print("MANUAL:", filter_ans_by(AnswerType.MANUAL, answers))
 
+    show_answers_by_chunk(list(map(lambda x: x[0], answers)))
+
+    print("==================================================")
     return json.dumps(list(map(lambda x: x[0], answers)))
+
+
+def show_answers_by_chunk(answers):
+    chunks_index, chunks_result = build_idx_answers(answers)
+
+    for i, v in enumerate(chunks_index):
+        if i == 0:
+            print("nick:")
+        elif i == 1:
+            print("sunny:")
+        elif i == 2:
+            print("學長:")
+        elif i == 3:
+            print("建德:")
+
+        print(json.dumps(v))
+        print(json.dumps(chunks_result[i]))
+        print()
 
 
 def calc_ABC(wiki_db_json, ques_tokenized, ans_tokenized):

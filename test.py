@@ -1,3 +1,4 @@
+import json
 import time
 from collections import defaultdict
 
@@ -127,6 +128,17 @@ def test_find_filter_answers():
         print()
 
 
+def test_merage_answer():
+    j = load_json("./dataset/merage_answer.json")
+    ans_4 = []
+    ans_4 += map(lambda x: str(x).strip(), j["nick"])
+    ans_4 += map(lambda x: str(x).strip(), j["sunny"])
+    ans_4 += map(lambda x: str(x).strip(), j["學長"])
+    ans_4 += map(lambda x: str(x).strip(), j["建德"])
+
+    print(json.dumps(ans_4))
+
+
 def main():
     # pre_process_wiki_db()
     # pre_process_wiki_db_wordcount()
@@ -140,7 +152,8 @@ def main():
     # test_ckip()
     # test_show_answers()
     # val_answers()
-    test_find_filter_answers()
+    # test_find_filter_answers()
+    test_merage_answer()
 
 
 def test_show_answers():
