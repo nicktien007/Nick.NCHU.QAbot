@@ -6,7 +6,7 @@ from enums.answer_type import AnswerType
 from service.calc_score_service import start_QA_bot, calc_ABC, get_ans_index_val_score, build_idx_answers, filter_ans_by
 from service.tokenize_service import tokenize
 from utils.file_utils import load_json
-
+from thirdparty.google import googleApi
 
 class inverted_index:
     def __init__(self, docs):
@@ -39,11 +39,15 @@ def test_one_calc_score():
 
     ques_tokenized = tokenize(
         (0, "《笑傲江湖》是金庸寫的武俠小說，小說男主角令狐沖於思過崖習得何種劍法?"))
-    ans_tokenized = ["天外飛仙", "獨孤九劍", "破雲摘星九九八十一劍"]
+    ques = "下列哪個顏色存在奧林匹克五環中出現"
+    ans_tokenized = ["黃色", "橙色", "粉色"]
 
     start_total = time.time()
-    res = calc_ABC(wiki, ques_tokenized, ans_tokenized)
+    res = calc_ABC(wiki, (0,ques), ans_tokenized)
     end_total = time.time()
+
+    google_res = googleApi(ques,ans_tokenized[0],ans_tokenized[1],ans_tokenized[2])
+
     print(res[0])
     print('run_time = ', end_total - start_total)
 
@@ -139,10 +143,21 @@ def test_merage_answer():
     print(json.dumps(ans_4))
 
 
+def test_google_api():
+    question = "小說《絕代雙驕》中，主角江小魚又稱小魚兒，請問何人為其兄弟?"
+    answer1 = "大魚兒"
+    answer2 = "江大魚"
+    answer3 = "花無缺"
+
+    answer = googleApi(question, answer1, answer2, answer3)
+
+    print(answer)
+
+
 def main():
     # pre_process_wiki_db()
     # pre_process_wiki_db_wordcount()
-    # test_one_calc_score()
+    test_one_calc_score()
     # test_start_QA_bot()
     # test_tokenize()
     # case_5()
@@ -153,7 +168,8 @@ def main():
     # test_show_answers()
     # val_answers()
     # test_find_filter_answers()
-    test_merage_answer()
+    # test_merage_answer()
+    # test_google_api()
 
 
 def test_show_answers():
