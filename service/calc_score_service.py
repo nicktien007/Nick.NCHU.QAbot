@@ -4,7 +4,7 @@ import time
 from collections import Counter
 
 from enums.answer_type import AnswerType
-from thirdparty.google import googleApi
+from thirdparty.google import googleApi, search_QUERY_RESULT
 from utils.file_utils import load_json
 from service.tokenize_service import tokenize
 
@@ -66,8 +66,9 @@ def calc_ABC(wiki_db_json, question_info, ansers):
     if len(ans_index.keys()) == 0:
         print(ansers)
         print("********** 找不到答案，調用GoogleSearch ***********\n")
-        google_res = googleApi(question_info[1], ansers[0], ansers[1], ansers[2])
-
+        # google_res = googleApi(question_info[1], ansers[0], ansers[1], ansers[2])
+        google_res = search_QUERY_RESULT(question_info[1], ansers[0], ansers[1], ansers[2])
+        print("=====GOOGLG 的建議:", google_res, "=====", end="\n\n")
         return google_res["answer"], AnswerType.NOT_FOUND
 
     # 如果只有一個答案在wiki找到，直接回傳該答案就好
@@ -84,10 +85,13 @@ def calc_ABC(wiki_db_json, question_info, ansers):
     answer = calc_ans(quest_counter, ans_index)
     ans_abc = to_ABC(answer, ansers)
 
-    google_res = googleApi(question_info[1], ansers[0], ansers[1], ansers[2])
+    # google_res = googleApi(question_info[1], ansers[0], ansers[1], ansers[2])
+    google_res = search_QUERY_RESULT(question_info[1], ansers[0], ansers[1], ansers[2],wiki_answer=ans_abc)
 
     if ans_abc != google_res["answer"]:
         print(ansers)
+        print("=====WIKI 的答案:", ans_abc, "=====", end="\n\n")
+        print("=====GOOGLG 的建議:", google_res, "=====", end="\n\n")
         return google_res["answer"], AnswerType.MANUAL
 
     print(ansers)
