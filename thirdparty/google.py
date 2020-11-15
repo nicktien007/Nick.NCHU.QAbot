@@ -6,14 +6,11 @@ from serpapi import GoogleSearch
 import re
 
 # safe queue
-import sys
 
 from queue import Queue
 
 # Time utility
 import time
-
-from utils.file_utils import load_json
 
 QUERY_RESULT = {}
 
@@ -108,16 +105,10 @@ def build_search(is_async=False):
     return GoogleSearch(params)
 
 
-def search_async(ques_path, show_msg=False):
-    # store searches
-    setUp()
-    print("Start Search_async...")
+def search_async(q_list):
     search_queue = Queue()
     search = build_search(is_async=True)
-
-    json_q = load_json(ques_path)
-
-    q_list = list(map(lambda x: x["Question"], json_q))
+    show_msg = False
 
     # loop through companies
     for q in q_list:
@@ -130,9 +121,7 @@ def search_async(ques_path, show_msg=False):
         if show_msg:
             print("execute async search: q = " + q)
             print("add search to the queue where id: " + data['search_metadata']['id'])
-
     print("wait until all search statuses are cached or success")
-
     # Create regular search
     search = GoogleSearch({"async": True})
     while not search_queue.empty():
@@ -158,6 +147,7 @@ def search_async(ques_path, show_msg=False):
             time.sleep(1)
     # search is over.
     print('all searches completed')
+
 
 def main():
     """

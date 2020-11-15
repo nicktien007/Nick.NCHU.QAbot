@@ -17,20 +17,21 @@ def start_QA_bot(wiki_path, question_path):
     end = time.time()
     print('load time = ', end - start)
 
+    return start_QA_bot_input_json(wiki_db_json, question)
+
+
+def start_QA_bot_input_json(wiki_db_json, question_json):
     start_total = time.time()
     answers = [calc_ABC(wiki_db_json,
                         (i, q["Question"]),
                         [q["A"], q["B"], q["C"]])
-               for i, q in enumerate(question)]
-
+               for i, q in enumerate(question_json)]
     end_total = time.time()
     print('run_time = ', end_total - start_total)
     print("人工比對:", filter_ans_by(AnswerType.MANUAL, answers))
     print("找不到答案:", filter_ans_by(AnswerType.NOT_FOUND, answers))
     print("只找到一個:", filter_ans_by(AnswerType.ONLY_ONE, answers))
-
     show_answers_by_chunk(list(map(lambda x: x[0], answers)))
-
     print("==================================================")
     return json.dumps(list(map(lambda x: x[0], answers)))
 
@@ -57,47 +58,47 @@ def calc_ABC(wiki_db_json, question_info, ansers):
     """
     計算答案A、B、C及狀態
     :param wiki_db_json:
-    :param ques_tokenized:[0]=>index, [1]=>question
+    :param question_info:[0]=>index, [1]=>question
     :param ansers:
     :return: [0]=>A、B、C , [1]=>AnswerTypeEnum
     """
     ans_index = get_tokenized_indexted(wiki_db_json, ansers)
+    ques_tokenized = tokenize(question_info)
 
     if len(ans_index.keys()) == 0:
         print(ansers)
         print("********** 找不到答案，調用GoogleSearch ***********\n")
         # google_res = googleApi(question_info[1], ansers[0], ansers[1], ansers[2])
         google_res = search_QUERY_RESULT(question_info[1], ansers[0], ansers[1], ansers[2])
-        print("=====GOOGLG 的建議:", google_res, "=====", end="\n\n")
-        return google_res["answer"], AnswerType.NOT_FOUND
+        answer_abc = google_res["answer"]
+        print("=====GOOGLG 的建議:", "(", answer_abc, ")", google_res, "=====", end="\n\n")
+        return answer_abc, AnswerType.NOT_FOUND
 
     # 如果只有一個答案在wiki找到，直接回傳該答案就好
     if len(ans_index.keys()) == 1:
         print(ansers)
         print("############只找到一個答案############")
-        print(list(ans_index.keys())[0], end="\n\n")
-        return to_ABC(list(ans_index.keys())[0], ansers), AnswerType.ONLY_ONE
+        answer_abc = to_ABC(list(ans_index.keys())[0], ansers)
+        print("=====(", answer_abc, ")", list(ans_index.keys())[0], "=====", end="\n\n")
+        return answer_abc, AnswerType.ONLY_ONE
 
-    ques_tokenized = tokenize(question_info)
     ques_index = get_tokenized_indexted(wiki_db_json, ques_tokenized)
     quest_counter = to_quest_counter(ques_index)
 
     answer = calc_ans(quest_counter, ans_index)
     ans_abc = to_ABC(answer, ansers)
 
-    # google_res = googleApi(question_info[1], ansers[0], ansers[1], ansers[2])
-    google_res = search_QUERY_RESULT(question_info[1], ansers[0], ansers[1], ansers[2],wiki_answer=ans_abc)
+    google_res = search_QUERY_RESULT(question_info[1], ansers[0], ansers[1], ansers[2], wiki_answer=ans_abc)
 
     if ans_abc != google_res["answer"]:
         print(ansers)
-        print("=====WIKI 的答案:", ans_abc, "=====", end="\n\n")
-        print("=====GOOGLG 的建議:", google_res, "=====", end="\n\n")
+        print("===== WIKI  的答案:", ans_abc, "=====", end="\n")
+        print("=====GOOGLG 的建議:", google_res["answer"], "=====", end="\n\n")
         return google_res["answer"], AnswerType.MANUAL
 
     print(ansers)
-    print("=====", answer, "=====", end="\n\n")
+    print("=====(", ans_abc, ")", answer, "=====", end="\n\n")
     return ans_abc, AnswerType.OK
-    # return to_ABC(answer, ansers), AnswerType.OK
 
 
 def get_tokenized_indexted(wiki_db_json, tokenized):
